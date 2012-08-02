@@ -11,3 +11,7 @@ all: span_port.so
 	    
 span_port.so: span_port.c
 	$(CC) -I$(VDE2_INCLUDE) -shared -o $@ $<
+
+clean:
+	rm -f span_port.so
+
