@@ -1,0 +1,5 @@
+# -*- Makefile -*-
+# vde2_config.mak: Configuration variables about VDE2
+
+# Location of the vde2 header files
+VDE2_INCLUDE=@VDE2_INCLUDE@
