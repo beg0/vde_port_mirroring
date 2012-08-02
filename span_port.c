@@ -61,11 +61,13 @@ static struct sp_cfg* find_span_port(int portno);
 static struct sp_cfg* find_or_create_span_port(int portno);
 static int del_span_port(int portno);
 
+/* Description of the plugin */
 struct plugin vde_plugin_data={
         .name="span_port",
         .help="Setup span port (aka mirroring port)",
 };
 
+/* CLI menu */
 static struct comlist cl[]={
         {"span_port","============","Span port",NULL,NOARG},
         {"span_port/add","N","add a port to mirror traffic",setup_span_port,STRARG},
@@ -94,6 +96,7 @@ static struct sp_cfg *new_sp_cfg(int portno)
     return ret;
 }
 
+/* Get span port configuration for a particular port. Create a new one if it does not exists already. */
 struct sp_cfg *find_or_create_span_port(int portno)
 {
         struct sp_cfg *cur = NULL;
@@ -137,6 +140,7 @@ struct sp_cfg *find_or_create_span_port(int portno)
         return NULL;
 }
 
+/* Find a span port configuration using port number. Return NULL if not found */
 struct sp_cfg *find_span_port(int portno)
 {
         struct sp_cfg *cur = NULL;
@@ -161,7 +165,8 @@ struct sp_cfg *find_span_port(int portno)
 
 }
 
-/* return 0 if ok, EBADSLT if port do not mirror, 12 if memory error */
+/* Remove (and free) a span port config from the linked list 
+  return 0 if ok, EBADSLT if port do not mirror, EINVAL if memory error */
 static int del_span_port(int portno)
 {
         struct sp_cfg *cur = NULL;
@@ -234,26 +239,26 @@ int unsetup_span_port(char* arg)
 /* print which ports are configured to mirrror traffic */
 static int print_ports(FILE *f)
 {
-  struct sp_cfg *cur = NULL;
+         struct sp_cfg *cur = NULL;
 
-  int found = 0;
+         int found = 0;
 
-  fprintf(f,"span ports: ");
-  for(cur = spc_head; cur && cur->next; cur = cur->next) {
-     if(cur->span) {
-       found = 1;
-       fprintf(f,"%d, ",cur->portno);
-     }
-  }
-  if(cur && cur->span) {
-     found = 1;
-     fprintf(f,"%d\n",cur->portno);
-  }
+         fprintf(f,"span ports: ");
+         for(cur = spc_head; cur && cur->next; cur = cur->next) {
+                 if(cur->span) {
+                       found = 1;
+                       fprintf(f,"%d, ",cur->portno);
+                 }
+         }
+         if(cur && cur->span) {
+                 found = 1;
+                 fprintf(f,"%d\n",cur->portno);
+         }
 
-  if(!found)
-    fprintf(f, "N/A\n");
+         if(!found)
+                 fprintf(f, "N/A\n");
 
-  return 0;
+         return 0;
 }
 
 /* do the actual mirroring: look fo incoming packets and forward them to span ports */
@@ -298,22 +303,22 @@ static int port_creation(struct dbgcl *event,void *arg,va_list v) {
                         portno = va_arg(v,int);
                         spc = find_or_create_span_port(portno);
                         if(spc) {
-                            spc->active=0;
+                                spc->active=0;
                         }
-                        /*printf("port %d del\n",portno);*/
                         break;
                 case D_PORT|D_IN:
                         portno = va_arg(v,int);
                         spc = find_or_create_span_port(portno);
                         if(spc) {
-                            spc->active=1;
+                                spc->active=1;
                         }
-                        /*printf("port %d created\n",portno);*/
                         break;
         }
 
 }
 
+
+/* plugin load/unload functions */
 	static void
 	__attribute__ ((constructor))
 init (void)
@@ -338,9 +343,9 @@ fini (void)
         /*free memory for linked list spc_head*/
         spc_head = NULL;
         while(cur) {
-          tmp = cur->next;
-          free(cur);
-          cur = tmp;
+                tmp = cur->next;
+                free(cur);
+                cur = tmp;
         }
 
         rv = eventdel(port_creation,"port",dl);
